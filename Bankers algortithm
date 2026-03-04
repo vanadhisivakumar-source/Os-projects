@@ -1,0 +1,106 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+int p, r;
+int avail[10], max[10][10], alloc[10][10], need[10][10], a[10];
+int i, j;
+
+void get()
+{
+    printf("\nENTER THE NUMBER OF PROCESSES: ");
+    scanf("%d", &p);
+    printf("\nENTER THE NUMBER OF RESOURCE TYPES: ");
+    scanf("%d", &r);
+
+    for (j = 0; j < r; j++) {
+        printf("\nENTER THE NUMBER OF RESOURCES FOR TYPE %d: ", j);
+        scanf("%d", &avail[j]);
+    }
+
+    for (i = 0; i < p; i++) {
+        printf("\nENTER THE MAXIMUM NUMBER OF RESOURCES REQUIRED FOR PROCESS %d:\n", i);
+        for (j = 0; j < r; j++) {
+            printf("For Resource type %d: ", j);
+            scanf("%d", &max[i][j]);
+        }
+    }
+
+    printf("\nENTER THE ALLOCATED INSTANCES:\n");
+    for (i = 0; i < p; i++) {
+        printf("\nPROCESS %d:\n-------------", i);
+        for (j = 0; j < r; j++) {
+            int m;
+            printf("\nResource Type - %d: ", j);
+            scanf("%d", &m);
+            if (m <= avail[j]) {
+                alloc[i][j] = m;
+                avail[j] -= m;
+            } else {
+                printf("\nALLOCATION EXCEEDS AVAILABLE. YOU CAN'T ALLOCATE IT.\n");
+                alloc[i][j] = 0;
+            }
+        }
+    }
+}
+
+void disp1()
+{
+    printf("\nNEEDED RESOURCES:\n-----------------");
+    for (i = 0; i < p; i++) {
+        printf("\nProcess %d:\t", i);
+        for (j = 0; j < r; j++) {
+            need[i][j] = max[i][j] - alloc[i][j];
+            printf(" %d", need[i][j]);
+        }
+    }
+}
+
+void seqnc()
+{
+    int finish[10] = {0};
+    int top = 0;
+
+    while (top < p) {
+        int found = 0;
+        for (i = 0; i < p; i++) {
+            if (!finish[i]) {
+                int canAllocate = 1;
+                for (j = 0; j < r; j++) {
+                    if (need[i][j] > avail[j]) {
+                        canAllocate = 0;
+                        break;
+                    }
+                }
+                if (canAllocate) {
+                    for (j = 0; j < r; j++)
+                        avail[j] += alloc[i][j];
+                    a[top++] = i;
+                    finish[i] = 1;
+                    found = 1;
+                }
+            }
+        }
+        if (!found) {
+            printf("\nSystem is in UNSAFE state. No safe sequence exists.\n");
+            return;
+        }
+    }
+    printf("\nSystem is in SAFE state.\n");
+}
+
+void disp2()
+{
+    printf("\nThe Safe Sequence of allocation to the processes: ");
+    for (i = 0; i < p; i++)
+        printf(" P%d", a[i]);
+    printf("\n");
+}
+
+int main()
+{
+    get();
+    disp1();
+    seqnc();
+    disp2();
+    return 0;
+}
